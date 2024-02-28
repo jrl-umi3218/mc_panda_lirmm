@@ -11,7 +11,7 @@ namespace mc_robots
 struct ROBOT_MODULE_API PandaLIRMM : public mc_robots::PandaRobotModule
 {
 public:
-  PandaLIRMM(const std::string & name);
+  PandaLIRMM(const std::string & name, bool fixSensorFrame = true);
 
 protected:
   void create_urdf();
@@ -25,19 +25,19 @@ protected:
 struct ROBOT_MODULE_API Panda2LIRMM : public mc_robots::PandaLIRMM
 {
 public:
-  Panda2LIRMM();
+  Panda2LIRMM(bool fixSensorFrame = true);
 };
 
 struct ROBOT_MODULE_API Panda5LIRMM : public mc_robots::PandaLIRMM
 {
 public:
-  Panda5LIRMM();
+  Panda5LIRMM(bool fixSensorFrame = true);
 };
 
 struct ROBOT_MODULE_API Panda7LIRMM : public mc_robots::PandaLIRMM
 {
 public:
-  Panda7LIRMM();
+  Panda7LIRMM(bool fixSensorFrame = true);
 };
 
 } // namespace mc_robots

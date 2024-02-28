@@ -52,9 +52,26 @@ Eigen::Vector3d computeBoxCenterOfMass(const Eigen::Vector3d & size, double mass
   return com_vector;
 }
 
-PandaLIRMM::PandaLIRMM(const std::string & robot_name) : mc_robots::PandaRobotModule(false, false, false)
+PandaLIRMM::PandaLIRMM(const std::string & robot_name, bool fixSensorFrame)
+: mc_robots::PandaRobotModule(false, false, false)
 {
   this->name = robot_name;
+
+  Eigen::Matrix3d Rr = Eigen::Matrix3d::Zero();
+  if(fixSensorFrame)
+  {
+    // On the real Panda, the hand force sensor seems to have a left handed
+    // coordinate system...
+    Rr << -1, 0, 0, 0, -1, 0, 0, 0, -1;
+  }
+  else
+  {
+    // In simulation the force sensor is right handed as expected
+    Rr << 1, 0, 0, 0, -1, 0, 0, 0, -1; // mc_rbdyn::rpyToMat(3.14, 0.0, 0.0)
+  }
+
+  _forceSensors.push_back(mc_rbdyn::ForceSensor("LeftHandForceSensor", "panda_link7",
+                                                sva::PTransformd(Rr, Eigen::Vector3d(0, 0, -0.04435))));
 }
 
 void PandaLIRMM::addBox(const std::string & box_name,
@@ -113,7 +130,7 @@ void PandaLIRMM::create_urdf()
   }
 }
 
-Panda2LIRMM::Panda2LIRMM() : PandaLIRMM("panda2_lirmm")
+Panda2LIRMM::Panda2LIRMM(bool fixSensorFrame) : PandaLIRMM("panda2_lirmm")
 {
   const auto & robot_name = this->name;
 
@@ -125,7 +142,7 @@ Panda2LIRMM::Panda2LIRMM() : PandaLIRMM("panda2_lirmm")
   create_urdf();
 }
 
-Panda5LIRMM::Panda5LIRMM() : PandaLIRMM("panda5_lirmm")
+Panda5LIRMM::Panda5LIRMM(bool fixSensorFrame) : PandaLIRMM("panda5_lirmm")
 {
   const auto & robot_name = this->name;
 
@@ -138,7 +155,7 @@ Panda5LIRMM::Panda5LIRMM() : PandaLIRMM("panda5_lirmm")
   create_urdf();
 }
 
-Panda7LIRMM::Panda7LIRMM() : PandaLIRMM("panda7_lirmm")
+Panda7LIRMM::Panda7LIRMM(bool fixSensorFrame) : PandaLIRMM("panda7_lirmm")
 {
   const auto & robot_name = this->name;
   double mass = 10;
@@ -168,13 +185,25 @@ extern "C"
     {
       return new mc_robots::Panda2LIRMM();
     }
+    else if(n == "Panda2LIRMM::Simulation")
+    {
+      return new mc_robots::Panda2LIRMM(false);
+    }
     else if(n == "Panda5LIRMM")
     {
       return new mc_robots::Panda5LIRMM();
     }
+    else if(n == "Panda5LIRMM::Simulation")
+    {
+      return new mc_robots::Panda5LIRMM(false);
+    }
     else if(n == "Panda7LIRMM")
     {
       return new mc_robots::Panda7LIRMM();
+    }
+    else if(n == "Panda7LIRMM::Simulation")
+    {
+      return new mc_robots::Panda7LIRMM(false);
     }
     else
     {
