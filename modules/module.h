@@ -14,6 +14,7 @@ public:
   PandaLIRMM(const std::string & name);
 
 protected:
+  void create_urdf();
   void addBox(const std::string & box_name,
               const std::string & parent_link,
               const sva::PTransformd & parentToBox,
@@ -31,6 +32,12 @@ struct ROBOT_MODULE_API Panda7LIRMM : public mc_robots::PandaLIRMM
 {
 public:
   Panda7LIRMM();
+};
+
+struct ROBOT_MODULE_API Panda5LIRMM : public mc_robots::PandaLIRMM
+{
+public:
+  Panda5LIRMM();
 };
 
 } // namespace mc_robots

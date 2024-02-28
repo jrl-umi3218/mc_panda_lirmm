@@ -66,41 +66,36 @@ void PandaLIRMM::addBox(const std::string & box_name,
   Eigen::Vector3d com = computeBoxCenterOfMass(box_size, box_mass);
   Eigen::Matrix3d inertiaM = computeBoxInertiaMatrix(box_size, box_mass);
 
-  rbd::parsers::Geometry::Box box;
-  box.size = box_size;
-
   rbd::parsers::Geometry geom;
-  geom.data = box;
   geom.type = rbd::parsers::Geometry::BOX;
+  geom.data = [&]()
+  {
+    rbd::parsers::Geometry::Box box;
+    box.size = box_size;
+    return box;
+  }();
 
   _visual[box_name] = {{box_name, sva::PTransformd::Identity(), geom, {}}};
   _collisionObjects[box_name] = {box_name, std::make_shared<sch::S_Box>(box_size.x(), box_size.y(), box_size.z())};
   _collisionTransforms[box_name] = sva::PTransformd::Identity();
 
   mbg.addBody({box_mass, com, inertiaM, box_name});
-  mbg.addJoint({rbd::Joint::Type::Fixed, true, "link0_to_" + box_name});
-  mbg.linkBodies("panda_link0", sva::PTransformd(Eigen::Vector3d{-(box_size.x() / 2 - 0.27), 0, -box_size.z() / 2}),
-                 box_name, sva::PTransformd::Identity(), "link0_to_" + box_name);
-  _default_attitude = {1, 0, 0, 0, 0, 0, box_size.z()};
+  auto jointName = "link0_to_" + box_name;
+  mbg.addJoint({rbd::Joint::Type::Fixed, true, jointName});
+  mbg.linkBodies("panda_link0", parentToBox, box_name, sva::PTransformd::Identity(), jointName);
 
   double i = 0.02;
   double s = 0.01;
   double d = 0;
+  _minimalSelfCollisions.emplace_back("convex_panda_link4", "robot_stand", i, s, d);
   _minimalSelfCollisions.emplace_back("convex_panda_link5", "robot_stand", i, s, d);
   _minimalSelfCollisions.emplace_back("convex_panda_link6", "robot_stand", i, s, d);
   _minimalSelfCollisions.emplace_back("convex_panda_link7", "robot_stand", i, s, d);
 }
 
-Panda2LIRMM::Panda2LIRMM() : PandaLIRMM("panda2_lirmm")
+void PandaLIRMM::create_urdf()
 {
   const auto & robot_name = this->name;
-
-  auto size = Eigen::Vector3d{0.75, 1.0, 0.75};
-  double mass = 10;
-  auto link0_to_table = sva::PTransformd(Eigen::Vector3d{-(size.x() / 2 - 0.27), 0, -size.z() / 2});
-  addBox("robot_stand", "panda_link0", link0_to_table, size, mass);
-  _default_attitude = {1, 0, 0, 0, 0, 0, size.z()};
-
   mb = mbg.makeMultiBody(mb.body(0).name(), true);
   mbc = rbd::MultiBodyConfig(mb);
   mbc.zero(mb);
@@ -118,6 +113,31 @@ Panda2LIRMM::Panda2LIRMM() : PandaLIRMM("panda2_lirmm")
   }
 }
 
+Panda2LIRMM::Panda2LIRMM() : PandaLIRMM("panda2_lirmm")
+{
+  const auto & robot_name = this->name;
+
+  auto size = Eigen::Vector3d{0.75, 1.0, 0.75};
+  double mass = 10;
+  auto link0_to_robot_stand = sva::PTransformd(Eigen::Vector3d{-(size.x() / 2 - 0.27), 0, -size.z() / 2});
+  addBox("robot_stand", "panda_link0", link0_to_robot_stand, size, mass);
+  _default_attitude = {1, 0, 0, 0, 0, 0, size.z()};
+  create_urdf();
+}
+
+Panda5LIRMM::Panda5LIRMM() : PandaLIRMM("panda5_lirmm")
+{
+  const auto & robot_name = this->name;
+
+  double mass = 40;
+  auto size = Eigen::Vector3d{0.25, 0.27, 0.716};
+  // XXX this is an approximate position
+  auto link0_to_robot_stand = sva::PTransformd(Eigen::Vector3d{-size.x() / 4, 0, -size.z() / 2});
+  addBox("robot_stand", "panda_link0", link0_to_robot_stand, size, mass);
+  _default_attitude = {1, 0, 0, 0, 0, 0, size.z()};
+  create_urdf();
+}
+
 Panda7LIRMM::Panda7LIRMM() : PandaLIRMM("panda7_lirmm")
 {
   const auto & robot_name = this->name;
@@ -129,7 +149,7 @@ extern "C"
 {
   ROBOT_MODULE_API void MC_RTC_ROBOT_MODULE(std::vector<std::string> & names)
   {
-    names = {"Panda2LIRMM"};
+    names = {"Panda2LIRMM", "Panda5LIRMM"};
   }
   ROBOT_MODULE_API void destroy(mc_rbdyn::RobotModule * ptr)
   {
@@ -141,6 +161,10 @@ extern "C"
     if(n == "Panda2LIRMM")
     {
       return new mc_robots::Panda2LIRMM();
+    }
+    else if(n == "Panda5LIRMM")
+    {
+      return new mc_robots::Panda5LIRMM();
     }
     else
     {
