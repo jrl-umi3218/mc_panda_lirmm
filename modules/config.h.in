@@ -1,0 +1,6 @@
+#pragma once
+
+namespace mc_robots
+{
+static constexpr auto panda_DESCRIPTION_PATH = "@PANDA_DESCRIPTION_PATH@";
+}
