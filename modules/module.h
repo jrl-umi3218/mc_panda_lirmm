@@ -28,16 +28,16 @@ public:
   Panda2LIRMM();
 };
 
-struct ROBOT_MODULE_API Panda7LIRMM : public mc_robots::PandaLIRMM
-{
-public:
-  Panda7LIRMM();
-};
-
 struct ROBOT_MODULE_API Panda5LIRMM : public mc_robots::PandaLIRMM
 {
 public:
   Panda5LIRMM();
+};
+
+struct ROBOT_MODULE_API Panda7LIRMM : public mc_robots::PandaLIRMM
+{
+public:
+  Panda7LIRMM();
 };
 
 } // namespace mc_robots

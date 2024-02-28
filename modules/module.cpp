@@ -141,6 +141,12 @@ Panda5LIRMM::Panda5LIRMM() : PandaLIRMM("panda5_lirmm")
 Panda7LIRMM::Panda7LIRMM() : PandaLIRMM("panda7_lirmm")
 {
   const auto & robot_name = this->name;
+  double mass = 10;
+  auto size = Eigen::Vector3d{1.0, 0.75, 0.75};
+  auto link0_to_robot_stand = sva::PTransformd(Eigen::Vector3d{size.x() / 2 - 0.19, 0, -size.z() / 2});
+  addBox("robot_stand", "panda_link0", link0_to_robot_stand, size, mass);
+  _default_attitude = {1, 0, 0, 0, 0, 0, size.z()};
+  create_urdf();
 }
 
 } // namespace mc_robots
@@ -149,7 +155,7 @@ extern "C"
 {
   ROBOT_MODULE_API void MC_RTC_ROBOT_MODULE(std::vector<std::string> & names)
   {
-    names = {"Panda2LIRMM", "Panda5LIRMM"};
+    names = {"Panda2LIRMM", "Panda5LIRMM", "Panda7LIRMM"};
   }
   ROBOT_MODULE_API void destroy(mc_rbdyn::RobotModule * ptr)
   {
@@ -165,6 +171,10 @@ extern "C"
     else if(n == "Panda5LIRMM")
     {
       return new mc_robots::Panda5LIRMM();
+    }
+    else if(n == "Panda7LIRMM")
+    {
+      return new mc_robots::Panda7LIRMM();
     }
     else
     {
