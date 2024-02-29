@@ -52,10 +52,42 @@ Eigen::Vector3d computeBoxCenterOfMass(const Eigen::Vector3d & size, double mass
   return com_vector;
 }
 
-PandaLIRMM::PandaLIRMM(const std::string & robot_name, bool fixSensorFrame)
-: mc_robots::PandaRobotModule(false, false, false)
+PandaLIRMM::PandaLIRMM(Robots robot, bool pump, bool foot, bool hand, bool fixSensorFrame)
+: mc_robots::PandaRobotModule(pump, foot, hand)
 {
-  this->name = robot_name;
+  this->name += "_" + pandaVariant(pump, foot, hand);
+
+  if(robot == Robots::Panda2LIRMM)
+  {
+    this->name = "panda2_lirmm_" + pandaVariant(pump, foot, hand);
+    auto size = Eigen::Vector3d{0.75, 1.0, 0.75};
+    double mass = 10;
+    auto link0_to_robot_stand = sva::PTransformd(Eigen::Vector3d{-(size.x() / 2 - 0.27), 0, -size.z() / 2});
+    addBox("robot_stand", "panda_link0", link0_to_robot_stand, size, mass);
+    _default_attitude = {1, 0, 0, 0, 0, 0, size.z()};
+    create_urdf();
+  }
+  else if(robot == Robots::Panda5LIRMM)
+  {
+    this->name = "panda5_lirmm_" + pandaVariant(pump, foot, hand);
+    double mass = 40;
+    auto size = Eigen::Vector3d{0.25, 0.27, 0.716};
+    // XXX this is an approximate position
+    auto link0_to_robot_stand = sva::PTransformd(Eigen::Vector3d{-size.x() / 4, 0, -size.z() / 2});
+    addBox("robot_stand", "panda_link0", link0_to_robot_stand, size, mass);
+    _default_attitude = {1, 0, 0, 0, 0, 0, size.z()};
+    create_urdf();
+  }
+  else if(robot == Robots::Panda7LIRMM)
+  {
+    this->name = "panda7_lirmm_" + pandaVariant(pump, foot, hand);
+    double mass = 10;
+    auto size = Eigen::Vector3d{1.0, 0.75, 0.75};
+    auto link0_to_robot_stand = sva::PTransformd(Eigen::Vector3d{size.x() / 2 - 0.19, 0, -size.z() / 2});
+    addBox("robot_stand", "panda_link0", link0_to_robot_stand, size, mass);
+    _default_attitude = {1, 0, 0, 0, 0, 0, size.z()};
+    create_urdf();
+  }
 
   Eigen::Matrix3d Rr = Eigen::Matrix3d::Zero();
   if(fixSensorFrame)
@@ -130,49 +162,15 @@ void PandaLIRMM::create_urdf()
   }
 }
 
-Panda2LIRMM::Panda2LIRMM(bool fixSensorFrame) : PandaLIRMM("panda2_lirmm")
-{
-  const auto & robot_name = this->name;
-
-  auto size = Eigen::Vector3d{0.75, 1.0, 0.75};
-  double mass = 10;
-  auto link0_to_robot_stand = sva::PTransformd(Eigen::Vector3d{-(size.x() / 2 - 0.27), 0, -size.z() / 2});
-  addBox("robot_stand", "panda_link0", link0_to_robot_stand, size, mass);
-  _default_attitude = {1, 0, 0, 0, 0, 0, size.z()};
-  create_urdf();
-}
-
-Panda5LIRMM::Panda5LIRMM(bool fixSensorFrame) : PandaLIRMM("panda5_lirmm")
-{
-  const auto & robot_name = this->name;
-
-  double mass = 40;
-  auto size = Eigen::Vector3d{0.25, 0.27, 0.716};
-  // XXX this is an approximate position
-  auto link0_to_robot_stand = sva::PTransformd(Eigen::Vector3d{-size.x() / 4, 0, -size.z() / 2});
-  addBox("robot_stand", "panda_link0", link0_to_robot_stand, size, mass);
-  _default_attitude = {1, 0, 0, 0, 0, 0, size.z()};
-  create_urdf();
-}
-
-Panda7LIRMM::Panda7LIRMM(bool fixSensorFrame) : PandaLIRMM("panda7_lirmm")
-{
-  const auto & robot_name = this->name;
-  double mass = 10;
-  auto size = Eigen::Vector3d{1.0, 0.75, 0.75};
-  auto link0_to_robot_stand = sva::PTransformd(Eigen::Vector3d{size.x() / 2 - 0.19, 0, -size.z() / 2});
-  addBox("robot_stand", "panda_link0", link0_to_robot_stand, size, mass);
-  _default_attitude = {1, 0, 0, 0, 0, 0, size.z()};
-  create_urdf();
-}
-
 } // namespace mc_robots
 
 extern "C"
 {
   ROBOT_MODULE_API void MC_RTC_ROBOT_MODULE(std::vector<std::string> & names)
   {
-    names = {"Panda2LIRMM", "Panda5LIRMM", "Panda7LIRMM"};
+    using namespace mc_robots;
+    ForAllVariants([&names](Robots robot, bool pump, bool foot, bool hand, bool fixSensorFrame)
+                   { names.push_back(NameFromParams(robot, pump, foot, hand, fixSensorFrame)); });
   }
   ROBOT_MODULE_API void destroy(mc_rbdyn::RobotModule * ptr)
   {
@@ -180,34 +178,28 @@ extern "C"
   }
   ROBOT_MODULE_API mc_rbdyn::RobotModule * create(const std::string & n)
   {
-    ROBOT_MODULE_CHECK_VERSION("Panda2LIRMM")
-    if(n == "Panda2LIRMM")
+    ROBOT_MODULE_CHECK_VERSION("PandaLIRMM")
+
+    static auto variant_factory = []()
     {
-      return new mc_robots::Panda2LIRMM();
-    }
-    else if(n == "Panda2LIRMM::Simulation")
+      std::map<std::string, std::function<mc_rbdyn::RobotModule *()>> variant_factory;
+      using namespace mc_robots;
+      ForAllVariants(
+          [&variant_factory](Robots robot, bool pump, bool foot, bool hand, bool fixSensorFrame)
+          {
+            variant_factory[NameFromParams(robot, pump, foot, hand, fixSensorFrame)] = [=]()
+            { return new PandaLIRMM(robot, pump, foot, hand, fixSensorFrame); };
+          });
+      return variant_factory;
+    }();
+    auto it = variant_factory.find(n);
+    if(it != variant_factory.end())
     {
-      return new mc_robots::Panda2LIRMM(false);
-    }
-    else if(n == "Panda5LIRMM")
-    {
-      return new mc_robots::Panda5LIRMM();
-    }
-    else if(n == "Panda5LIRMM::Simulation")
-    {
-      return new mc_robots::Panda5LIRMM(false);
-    }
-    else if(n == "Panda7LIRMM")
-    {
-      return new mc_robots::Panda7LIRMM();
-    }
-    else if(n == "Panda7LIRMM::Simulation")
-    {
-      return new mc_robots::Panda7LIRMM(false);
+      return it->second();
     }
     else
     {
-      mc_rtc::log::error("PandaLIRMM module cannot create an object of type {}", n);
+      mc_rtc::log::error("PandaLIRMM module Cannot create an object of type {}", n);
       return nullptr;
     }
   }
