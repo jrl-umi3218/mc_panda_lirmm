@@ -22,6 +22,41 @@ Since the robots' estimated force sensor is left handed, and most simulators do 
 
 For example you can use `Panda7LIRMMDefault`, `Panda7LIRMMHand`, `Panda7LIRMMFoot`, `Panda7LIRMMPump`, and their corresponding simulation variants `Panda7LIRMMDefaultSimulation`, `...`
 
+Panda2
+===
+Panda2 model
+![panda2](doc/panda2.png)
+
+Panda2 convex
+![panda2 convex](doc/panda2_convex.png)
+
+Panda2 basic convex shapes
+![panda2 convex shapes](doc/panda2_shapes_convex.png)
+
+Panda5
+===
+
+Panda5 model
+![panda5](doc/panda5.png)
+
+Panda5 convex
+![panda5 convex](doc/panda5_convex.png)
+
+Panda5 basic convex shapes
+![panda5 convex shapes](doc/panda5_shapes_convex.png)
+
+Panda7
+===
+
+Panda7 model
+![panda7](doc/panda7.png)
+
+Panda7 convex
+![panda7 convex](doc/panda7_convex.png)
+
+Panda7 basic convex shapes
+![panda7 convex shapes](doc/panda7_shapes_convex.png)
+
 Dependencies
 ------------
 
