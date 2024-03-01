@@ -44,20 +44,20 @@ static std::string pandaVariantUppercase(bool pump, bool foot, bool hand)
   return v;
 }
 
-enum class Robots
+enum class PandaLIRMMRobots
 {
   Panda2LIRMM,
   Panda6LIRMM,
   Panda7LIRMM
 };
 
-static std::string to_string(Robots robots)
+static std::string to_string(PandaLIRMMRobots robots)
 {
-  if(robots == Robots::Panda2LIRMM)
+  if(robots == PandaLIRMMRobots::Panda2LIRMM)
   {
     return "Panda2LIRMM";
   }
-  else if(robots == Robots::Panda6LIRMM)
+  else if(robots == PandaLIRMMRobots::Panda6LIRMM)
   {
     return "Panda6LIRMM";
   }
@@ -67,7 +67,7 @@ static std::string to_string(Robots robots)
   }
 }
 
-inline static std::string NameFromParams(Robots robot, bool pump, bool foot, bool hand, bool fixSensorFrame)
+inline static std::string NameFromParams(PandaLIRMMRobots robot, bool pump, bool foot, bool hand, bool fixSensorFrame)
 {
   auto name = to_string(robot) + pandaVariantUppercase(pump, foot, hand);
   if(!fixSensorFrame)
@@ -84,7 +84,7 @@ static void ForAllVariants(Callback cb)
       {false, false, false}, {true, false, false}, {false, true, false}, {false, false, true}};
   auto fixSensorFrameOptions = {true, false};
 
-  for(auto robot : {Robots::Panda2LIRMM, Robots::Panda6LIRMM, Robots::Panda7LIRMM})
+  for(auto robot : {PandaLIRMMRobots::Panda2LIRMM, PandaLIRMMRobots::Panda6LIRMM, PandaLIRMMRobots::Panda7LIRMM})
   {
     for(auto endEffector : endEffectorOptions)
     {
@@ -99,7 +99,7 @@ static void ForAllVariants(Callback cb)
 struct ROBOT_MODULE_API PandaLIRMM : public mc_robots::PandaRobotModule
 {
 public:
-  PandaLIRMM(Robots robot, bool pump, bool foot, bool hand, bool fixSensorFrame = true);
+  PandaLIRMM(PandaLIRMMRobots robot, bool pump, bool foot, bool hand, bool fixSensorFrame = true);
 
 protected:
   void create_urdf();
@@ -108,12 +108,6 @@ protected:
               const sva::PTransformd & parentToBox,
               const Eigen::Vector3d & box_size,
               double box_mass);
-};
-
-struct ROBOT_MODULE_API Panda2LIRMM : public mc_robots::PandaLIRMM
-{
-public:
-  Panda2LIRMM(bool pump, bool foot, bool hand, bool fixSensorFrame = true);
 };
 
 } // namespace mc_robots

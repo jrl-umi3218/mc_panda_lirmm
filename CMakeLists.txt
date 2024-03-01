@@ -7,11 +7,12 @@ endif()
 
 project(mc_panda_lirmm LANGUAGES CXX VERSION 1.0)
 enable_testing()
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 find_package(mc_panda REQUIRED)
 
 add_subdirectory(modules)
+add_subdirectory(cmake)
 
 if(BUILD_TESTING)
   add_subdirectory(tests)

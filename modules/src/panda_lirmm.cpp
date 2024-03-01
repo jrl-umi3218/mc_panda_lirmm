@@ -1,7 +1,7 @@
-#include "module.h"
 #include <RBDyn/parsers/urdf.h>
-#include "config.h"
 #include <Eigen/Core>
+#include <mc_panda_lirmm/config.h>
+#include <mc_panda_lirmm/panda_lirmm.h>
 #include <sch/S_Object/S_Box.h>
 
 #include <boost/filesystem.hpp>
@@ -52,12 +52,12 @@ Eigen::Vector3d computeBoxCenterOfMass(const Eigen::Vector3d & size, double mass
   return com_vector;
 }
 
-PandaLIRMM::PandaLIRMM(Robots robot, bool pump, bool foot, bool hand, bool fixSensorFrame)
+PandaLIRMM::PandaLIRMM(PandaLIRMMRobots robot, bool pump, bool foot, bool hand, bool fixSensorFrame)
 : mc_robots::PandaRobotModule(pump, foot, hand)
 {
   this->name += "_" + pandaVariant(pump, foot, hand);
 
-  if(robot == Robots::Panda2LIRMM)
+  if(robot == PandaLIRMMRobots::Panda2LIRMM)
   {
     this->name = "panda2_lirmm_" + pandaVariant(pump, foot, hand);
     auto size = Eigen::Vector3d{0.75, 1.0, 0.75};
@@ -67,7 +67,7 @@ PandaLIRMM::PandaLIRMM(Robots robot, bool pump, bool foot, bool hand, bool fixSe
     _default_attitude = {1, 0, 0, 0, 0, 0, size.z()};
     create_urdf();
   }
-  else if(robot == Robots::Panda6LIRMM)
+  else if(robot == PandaLIRMMRobots::Panda6LIRMM)
   {
     this->name = "panda6_lirmm_" + pandaVariant(pump, foot, hand);
     double mass = 40;
@@ -78,7 +78,7 @@ PandaLIRMM::PandaLIRMM(Robots robot, bool pump, bool foot, bool hand, bool fixSe
     _default_attitude = {1, 0, 0, 0, 0, 0, size.z()};
     create_urdf();
   }
-  else if(robot == Robots::Panda7LIRMM)
+  else if(robot == PandaLIRMMRobots::Panda7LIRMM)
   {
     this->name = "panda7_lirmm_" + pandaVariant(pump, foot, hand);
     double mass = 10;
@@ -163,44 +163,3 @@ void PandaLIRMM::create_urdf()
 }
 
 } // namespace mc_robots
-
-extern "C"
-{
-  ROBOT_MODULE_API void MC_RTC_ROBOT_MODULE(std::vector<std::string> & names)
-  {
-    using namespace mc_robots;
-    ForAllVariants([&names](Robots robot, bool pump, bool foot, bool hand, bool fixSensorFrame)
-                   { names.push_back(NameFromParams(robot, pump, foot, hand, fixSensorFrame)); });
-  }
-  ROBOT_MODULE_API void destroy(mc_rbdyn::RobotModule * ptr)
-  {
-    delete ptr;
-  }
-  ROBOT_MODULE_API mc_rbdyn::RobotModule * create(const std::string & n)
-  {
-    ROBOT_MODULE_CHECK_VERSION("PandaLIRMM")
-
-    static auto variant_factory = []()
-    {
-      std::map<std::string, std::function<mc_rbdyn::RobotModule *()>> variant_factory;
-      using namespace mc_robots;
-      ForAllVariants(
-          [&variant_factory](Robots robot, bool pump, bool foot, bool hand, bool fixSensorFrame)
-          {
-            variant_factory[NameFromParams(robot, pump, foot, hand, fixSensorFrame)] = [=]()
-            { return new PandaLIRMM(robot, pump, foot, hand, fixSensorFrame); };
-          });
-      return variant_factory;
-    }();
-    auto it = variant_factory.find(n);
-    if(it != variant_factory.end())
-    {
-      return it->second();
-    }
-    else
-    {
-      mc_rtc::log::error("PandaLIRMM module Cannot create an object of type {}", n);
-      return nullptr;
-    }
-  }
-}
