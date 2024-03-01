@@ -47,7 +47,7 @@ static std::string pandaVariantUppercase(bool pump, bool foot, bool hand)
 enum class Robots
 {
   Panda2LIRMM,
-  Panda5LIRMM,
+  Panda6LIRMM,
   Panda7LIRMM
 };
 
@@ -57,9 +57,9 @@ static std::string to_string(Robots robots)
   {
     return "Panda2LIRMM";
   }
-  else if(robots == Robots::Panda5LIRMM)
+  else if(robots == Robots::Panda6LIRMM)
   {
-    return "Panda5LIRMM";
+    return "Panda6LIRMM";
   }
   else
   {
@@ -84,7 +84,7 @@ static void ForAllVariants(Callback cb)
       {false, false, false}, {true, false, false}, {false, true, false}, {false, false, true}};
   auto fixSensorFrameOptions = {true, false};
 
-  for(auto robot : {Robots::Panda2LIRMM, Robots::Panda5LIRMM, Robots::Panda7LIRMM})
+  for(auto robot : {Robots::Panda2LIRMM, Robots::Panda6LIRMM, Robots::Panda7LIRMM})
   {
     for(auto endEffector : endEffectorOptions)
     {

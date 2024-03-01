@@ -67,9 +67,9 @@ PandaLIRMM::PandaLIRMM(Robots robot, bool pump, bool foot, bool hand, bool fixSe
     _default_attitude = {1, 0, 0, 0, 0, 0, size.z()};
     create_urdf();
   }
-  else if(robot == Robots::Panda5LIRMM)
+  else if(robot == Robots::Panda6LIRMM)
   {
-    this->name = "panda5_lirmm_" + pandaVariant(pump, foot, hand);
+    this->name = "panda6_lirmm_" + pandaVariant(pump, foot, hand);
     double mass = 40;
     auto size = Eigen::Vector3d{0.25, 0.27, 0.716};
     // XXX this is an approximate position

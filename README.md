@@ -15,7 +15,7 @@ Naming convention
 - `PandaFoot`
 - `PandaPump`
 
-In addition this package provides modules for the robots `Panda2`, `Panda5` and `Panda7` (each corresponding to one of the panda robots at `LIRMM`). Robot modules are named `<RobotName>LIRMM<End Effector>`.
+In addition this package provides modules for the robots `Panda2`, `panda6` and `Panda7` (each corresponding to one of the panda robots at `LIRMM`). Robot modules are named `<RobotName>LIRMM<End Effector>`.
 Since the robots' estimated force sensor is left handed, and most simulators do not support this, for each robot module two variants are further provided:
 - `<RobotName>LIRMM<End Effector>` : flips the sensor measurement along one axis such that it becomes right handed. This is intended to be used on the real robot.
 - `<RobotName>LIRMM<End Effector>Simulation` : keeps the force sensor measurement as-is. This is intended to be used in simulators where the force sensor measurement is already right-handed.
@@ -24,6 +24,10 @@ For example you can use `Panda7LIRMMDefault`, `Panda7LIRMMHand`, `Panda7LIRMMFoo
 
 Panda2
 ===
+
+
+IP: 192.168.1.2
+
 Panda2 model
 ![panda2](doc/panda2.png)
 
@@ -33,20 +37,24 @@ Panda2 convex
 Panda2 basic convex shapes
 ![panda2 convex shapes](doc/panda2_shapes_convex.png)
 
-Panda5
+Panda6
 ===
 
-Panda5 model
-![panda5](doc/panda5.png)
+IP: 172.16.0.6
 
-Panda5 convex
-![panda5 convex](doc/panda5_convex.png)
+panda6 model
+![panda6](doc/panda6.png)
 
-Panda5 basic convex shapes
-![panda5 convex shapes](doc/panda5_shapes_convex.png)
+panda6 convex
+![panda6 convex](doc/panda6_convex.png)
+
+panda6 basic convex shapes
+![panda6 convex shapes](doc/panda6_shapes_convex.png)
 
 Panda7
 ===
+
+IP: 172.16.1.7
 
 Panda7 model
 ![panda7](doc/panda7.png)
