@@ -7,7 +7,7 @@
 #include <boost/filesystem.hpp>
 namespace bfs = boost::filesystem;
 
-namespace mc_robots
+namespace mc_panda_lirmm
 {
 
 // Compute the inertia matrix for a box
@@ -162,4 +162,4 @@ void PandaLIRMM::create_urdf()
   }
 }
 
-} // namespace mc_robots
+} // namespace mc_panda_lirmm

@@ -14,6 +14,8 @@ find_package(mc_panda REQUIRED)
 add_subdirectory(modules)
 add_subdirectory(cmake)
 
+include(CTest)
+enable_testing()
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()

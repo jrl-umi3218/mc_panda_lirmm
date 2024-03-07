@@ -5,7 +5,7 @@
 
 #include <mc_panda/panda.h>
 
-namespace mc_robots
+namespace mc_panda_lirmm
 {
 
 static std::string pandaVariant(bool pump, bool foot, bool hand)
@@ -110,4 +110,4 @@ protected:
               double box_mass);
 };
 
-} // namespace mc_robots
+} // namespace mc_panda_lirmm
