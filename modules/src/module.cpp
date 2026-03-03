@@ -12,22 +12,22 @@ static std::string pandaVariant(bool pump, bool foot, bool hand)
 {
   if(pump && !foot && !hand)
   {
-    mc_rtc::log::info("PandaRobotModule uses the panda variant: 'panda_pump'");
+    // mc_rtc::log::info("PandaRobotModule uses the panda variant: 'panda_pump'");
     return "pump";
   }
   if(!pump && foot && !hand)
   {
-    mc_rtc::log::info("PandaRobotModule uses the panda variant: 'panda_foot'");
+    // mc_rtc::log::info("PandaRobotModule uses the panda variant: 'panda_foot'");
     return "foot";
   }
   if(!pump && !foot && hand)
   {
-    mc_rtc::log::info("PandaRobotModule uses the panda variant: 'panda_hand'");
+    // mc_rtc::log::info("PandaRobotModule uses the panda variant: 'panda_hand'");
     return "hand";
   }
   if(!pump && !foot && !hand)
   {
-    mc_rtc::log::info("PandaRobotModule uses the panda variant: 'panda_default'");
+    // mc_rtc::log::info("PandaRobotModule uses the panda variant: 'panda_default'");
     return "default";
   }
   mc_rtc::log::error("PandaRobotModule does not provide this panda variant...");
@@ -62,24 +62,29 @@ namespace mc_panda_lirmm
 
 enum class PandaLIRMMRobots
 {
-  Panda2LIRMM,
-  Panda6LIRMM,
-  Panda7LIRMM
+  Panda2LIRMM, // original attachement position on the table
+  Panda2LIRMM_2, // second attachement position on the table
+  Panda7LIRMM, // original attachement position on the table
+  Panda7LIRMM_2, // second attachement position on the table
+  Panda6LIRMM
 };
 
 static std::string to_string(PandaLIRMMRobots robots)
 {
-  if(robots == PandaLIRMMRobots::Panda2LIRMM)
+  switch(robots)
   {
-    return "Panda2LIRMM";
-  }
-  else if(robots == PandaLIRMMRobots::Panda6LIRMM)
-  {
-    return "Panda6LIRMM";
-  }
-  else
-  {
-    return "Panda7LIRMM";
+    case PandaLIRMMRobots::Panda2LIRMM:
+      return "Panda2LIRMM";
+    case PandaLIRMMRobots::Panda2LIRMM_2:
+      return "Panda2LIRMM_2::";
+    case PandaLIRMMRobots::Panda7LIRMM:
+      return "Panda7LIRMM";
+    case PandaLIRMMRobots::Panda7LIRMM_2:
+      return "Panda7LIRMM_2::";
+    case PandaLIRMMRobots::Panda6LIRMM:
+      return "Panda6LIRMM";
+    default:
+      return "UnknownPandaLIRMM";
   }
 }
 
@@ -94,7 +99,8 @@ static void ForAllVariants(Callback cb)
   auto endEffectorOptions = std::vector<std::array<bool, 3>>{
       {false, false, false}, {true, false, false}, {false, true, false}, {false, false, true}};
 
-  for(auto robot : {PandaLIRMMRobots::Panda2LIRMM, PandaLIRMMRobots::Panda6LIRMM, PandaLIRMMRobots::Panda7LIRMM})
+  for(auto robot : {PandaLIRMMRobots::Panda2LIRMM, PandaLIRMMRobots::Panda2LIRMM_2, PandaLIRMMRobots::Panda6LIRMM,
+                    PandaLIRMMRobots::Panda7LIRMM, PandaLIRMMRobots::Panda7LIRMM_2})
   {
     for(auto endEffector : endEffectorOptions)
     {
@@ -144,6 +150,17 @@ extern "C"
               robot_name = "panda2_lirmm_default";
               box_to_robot = sva::PTransformd(Eigen::Vector3d{-(size.x() / 2 - 0.27), 0, -size.z()});
             }
+            else if(robot == PandaLIRMMRobots::Panda2LIRMM_2)
+            {
+              size = Eigen::Vector3d{0.75, 1.0, 0.75};
+              mass = 10;
+              robot_name = "panda2_lirmm2_default";
+              // FIXME position
+              // Moved by x:-23.8, y:-9.6
+              box_to_robot = sva::PTransformd(Eigen::Vector3d{-(size.x() / 2 - 0.27), 0, -size.z()});
+              box_to_robot.translation().x() += 0.238;
+              box_to_robot.translation().y() += 0.096;
+            }
             else if(robot == PandaLIRMMRobots::Panda6LIRMM)
             {
               size = Eigen::Vector3d{0.25, 0.27, 0.716};
@@ -151,12 +168,28 @@ extern "C"
               robot_name = "panda6_lirmm_default";
               box_to_robot = sva::PTransformd(Eigen::Vector3d{-(size.x() / 4), 0, -size.z()});
             }
-            else // Panda7LIRMM
+            else if(robot == PandaLIRMMRobots::Panda7LIRMM)
             {
               size = Eigen::Vector3d{1.0, 0.75, 0.75};
               mass = 10;
               robot_name = "panda7_lirmm_default";
               box_to_robot = sva::PTransformd(Eigen::Vector3d{size.x() / 2 - 0.19, 0, -size.z()});
+            }
+            else if(robot == PandaLIRMMRobots::Panda7LIRMM_2)
+            {
+              size = Eigen::Vector3d{1.0, 0.75, 0.75};
+              mass = 10;
+              robot_name = "panda7_lirmm_default";
+              // FIXME position
+              // moved by x:-57.25, y:-1.0cm
+              box_to_robot = sva::PTransformd(Eigen::Vector3d{size.x() / 2 - 0.19, 0, -size.z()});
+              box_to_robot.translation().x() -= 0.5725;
+              box_to_robot.translation().y() -= 0.01;
+            }
+            else
+            {
+              mc_rtc::log::error_and_throw("PandaLIRMM module does not have a valid configuration for variant {}.",
+                                           variant_name);
             }
             variant_factory[variant_name] = [=]()
             {
