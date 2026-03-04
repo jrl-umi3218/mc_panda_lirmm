@@ -138,6 +138,8 @@ extern "C"
             std::string variant_name = mc_panda_lirmm::NameFromParams(robot, pump, foot, hand);
             // Use connect approach for these variants
             Eigen::Vector3d size;
+            using Color = mc_rtc::gui::Color;
+            Color color;
             double mass;
             // get the main panda module name from mc_panda
             auto panda_module = mc_panda::NameFromParams(pump, foot, hand);
@@ -146,6 +148,7 @@ extern "C"
             if(robot == PandaLIRMMRobots::Panda2LIRMM)
             {
               size = Eigen::Vector3d{0.75, 1.0, 0.75};
+              color = Color::Gray;
               mass = 10;
               robot_name = "panda2_lirmm_default";
               box_to_robot = sva::PTransformd(Eigen::Vector3d{-(size.x() / 2 - 0.27), 0, -size.z()});
@@ -153,10 +156,11 @@ extern "C"
             else if(robot == PandaLIRMMRobots::Panda2LIRMM_2)
             {
               size = Eigen::Vector3d{0.75, 1.0, 0.75};
+              color = Color::Gray;
               mass = 10;
               robot_name = "panda2_lirmm2_default";
-              // FIXME position
-              // Moved by x:-23.8, y:-9.6
+
+              // Moved by x:-23.8, y:-9.6 w.r.t original table attachement
               box_to_robot = sva::PTransformd(Eigen::Vector3d{-(size.x() / 2 - 0.27), 0, -size.z()});
               box_to_robot.translation().x() += 0.238;
               box_to_robot.translation().y() += 0.096;
@@ -164,6 +168,7 @@ extern "C"
             else if(robot == PandaLIRMMRobots::Panda6LIRMM)
             {
               size = Eigen::Vector3d{0.25, 0.27, 0.716};
+              color = Color::Cyan;
               mass = 40;
               robot_name = "panda6_lirmm_default";
               box_to_robot = sva::PTransformd(Eigen::Vector3d{-(size.x() / 4), 0, -size.z()});
@@ -171,6 +176,7 @@ extern "C"
             else if(robot == PandaLIRMMRobots::Panda7LIRMM)
             {
               size = Eigen::Vector3d{1.0, 0.75, 0.75};
+              color = Color::LightGray;
               mass = 10;
               robot_name = "panda7_lirmm_default";
               box_to_robot = sva::PTransformd(Eigen::Vector3d{size.x() / 2 - 0.19, 0, -size.z()});
@@ -178,10 +184,10 @@ extern "C"
             else if(robot == PandaLIRMMRobots::Panda7LIRMM_2)
             {
               size = Eigen::Vector3d{1.0, 0.75, 0.75};
+              color = Color::LightGray;
               mass = 10;
               robot_name = "panda7_lirmm_default";
-              // FIXME position
-              // moved by x:-57.25, y:-1.0cm
+              // moved by x:-57.25, y:-1.0cm w.r.t to original table attachement
               box_to_robot = sva::PTransformd(Eigen::Vector3d{size.x() / 2 - 0.19, 0, -size.z()});
               box_to_robot.translation().x() -= 0.5725;
               box_to_robot.translation().y() -= 0.01;
@@ -193,17 +199,18 @@ extern "C"
             }
             variant_factory[variant_name] = [=]()
             {
-              auto boxYaml = fmt::format(R"(
-    name: box
+              auto boxYaml =
+                  fmt::format(R"(
+    name: robot_support
     origin:
       translation: [0, 0, {0}]
       rotation: [0, 0, 0]
     material:
       color:
-        r: 0
-        g: 0
-        b: 1
-        a: 1
+        r: {5}
+        g: {6}
+        b: {7}
+        a: {8}
     geometry:
       box:
         size: [{1}, {2}, {3}]
@@ -211,7 +218,7 @@ extern "C"
       mass: {4}
     fixed: true
     )",
-                                         size.z() / 2, size.x(), size.y(), size.z(), mass);
+                              size.z() / 2, size.x(), size.y(), size.z(), mass, color.r, color.g, color.b, color.a);
 
               auto boxConfig = mc_rtc::Configuration::fromYAMLData(boxYaml);
               auto rmV = mc_rbdyn::robotModuleFromVisual("robot_support", boxConfig);
