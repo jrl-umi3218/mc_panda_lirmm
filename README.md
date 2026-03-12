@@ -15,12 +15,9 @@ Naming convention
 - `PandaFoot`
 - `PandaPump`
 
-In addition this package provides modules for the robots `Panda2`, `panda6` and `Panda7` (each corresponding to one of the panda robots at `LIRMM`). Robot modules are named `<RobotName>LIRMM<End Effector>`.
-Since the robots' estimated force sensor is left handed, and most simulators do not support this, for each robot module two variants are further provided:
-- `<RobotName>LIRMM<End Effector>` : flips the sensor measurement along one axis such that it becomes right handed. This is intended to be used on the real robot.
-- `<RobotName>LIRMM<End Effector>Simulation` : keeps the force sensor measurement as-is. This is intended to be used in simulators where the force sensor measurement is already right-handed.
+In addition this package provides modules for the robots `Panda2`, `Panda6` and `Panda7` (each corresponding to one of the panda robots at `LIRMM`). Robot modules are named `<RobotName>LIRMM<End Effector>`.
 
-For example you can use `Panda7LIRMMDefault`, `Panda7LIRMMHand`, `Panda7LIRMMFoot`, `Panda7LIRMMPump`, and their corresponding simulation variants `Panda7LIRMMDefaultSimulation`, `...`
+For example you can use `Panda7LIRMMDefault`, `Panda7LIRMMHand`, `Panda7LIRMMFoot`, `Panda7LIRMMPump`.
 
 Panda2
 ===

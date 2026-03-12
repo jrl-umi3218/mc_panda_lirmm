@@ -1,6 +1,0 @@
-#pragma once
-
-namespace mc_panda_lirmm
-{
-static constexpr auto panda_DESCRIPTION_PATH = "@PANDA_DESCRIPTION_PATH@";
-}
