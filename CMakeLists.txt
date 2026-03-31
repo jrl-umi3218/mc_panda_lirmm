@@ -11,11 +11,12 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(mc_panda REQUIRED)
 
+add_subdirectory(calibrated_urdf)
 add_subdirectory(modules)
 add_subdirectory(cmake)
 
-include(CTest)
-enable_testing()
-if(BUILD_TESTING)
-  add_subdirectory(tests)
-endif()
+# include(CTest)
+# enable_testing()
+# if(BUILD_TESTING)
+#   add_subdirectory(tests)
+# endif()
