@@ -5,23 +5,20 @@
 #include <mc_panda/panda.h>
 #include <mc_rbdyn/RobotModuleMacros.h>
 #include <mc_robots/api.h>
+#include <SpaceVecAlg/SpaceVecAlg>
 #include "config.h"
 
 namespace mc_panda_lirmm
 {
 
+/**
+ * LIRMM variants without support (table)
+ */
 enum class PandaLIRMMRobots
 {
   Panda2LIRMM, // no table
-  Panda2LIRMM_Table1, // base on table, position 1
-  Panda2LIRMM_Table2, // base on table, position 2
-
   Panda7LIRMM, // original attachement position on the table
-  Panda7LIRMM_Table1, // base on table, position 1
-  Panda7LIRMM_Table2, // base on table, position 2
-
   Panda6LIRMM, // no support
-  Panda6LIRMM_MetalSupport
 };
 
 static std::string to_string(PandaLIRMMRobots robots)
@@ -31,38 +28,85 @@ static std::string to_string(PandaLIRMMRobots robots)
   {
     case R::Panda2LIRMM:
       return "Panda2LIRMM";
-    case R::Panda2LIRMM_Table1:
-      return "Panda2LIRMM_Table1";
-    case R::Panda2LIRMM_Table2:
-      return "Panda2LIRMM_Table2";
     case R::Panda7LIRMM:
       return "Panda7LIRMM";
-    case R::Panda7LIRMM_Table1:
-      return "Panda7LIRMM_Table1";
-    case R::Panda7LIRMM_Table2:
-      return "Panda7LIRMM_Table2";
     case R::Panda6LIRMM:
       return "Panda6LIRMM";
-    case R::Panda6LIRMM_MetalSupport:
-      return "Panda6LIRMM_MetalSupport";
     default:
       return "UnknownPandaLIRMM";
   }
 }
 
+struct BoxRobotParams
+{
+  Eigen::Vector3d size;
+  mc_rtc::gui::Color color;
+  double mass;
+  sva::PTransformd box_to_robot = sva::PTransformd::Identity();
+};
+
+/**
+ * Map of LIRMM robot variants to their associated supports (if any). Each support is defined by its name and
+ * parameters.
+ */
+const std::map<PandaLIRMMRobots, std::map<std::string, BoxRobotParams>> PandaLIRMMRobotSupports = {
+    {PandaLIRMMRobots::Panda2LIRMM,
+     {{"Table1",
+       []
+       {
+         Eigen::Vector3d size{0.75, 1.0, 0.75};
+         return BoxRobotParams{size, mc_rtc::gui::Color::Gray, 10,
+                               sva::PTransformd(Eigen::Vector3d{-(size.x() / 2 - 0.27), 0, -size.z()})};
+       }()},
+      {"Table2",
+       []
+       {
+         Eigen::Vector3d size{0.75, 1.0, 0.75};
+         Eigen::Vector3d t{-(size.x() / 2 - 0.27), 0, -size.z()};
+         t.x() += 0.238;
+         t.y() += 0.096;
+         return BoxRobotParams{size, mc_rtc::gui::Color::Gray, 10, sva::PTransformd(t)};
+       }()}}},
+    {PandaLIRMMRobots::Panda7LIRMM,
+     {{"Table1",
+       []
+       {
+         Eigen::Vector3d size{1.0, 0.75, 0.75};
+         return BoxRobotParams{size, mc_rtc::gui::Color::LightGray, 10,
+                               sva::PTransformd(Eigen::Vector3d{size.x() / 2 - 0.19, 0, -size.z()})};
+       }()},
+      {"Table2",
+       []
+       {
+         Eigen::Vector3d size{1.0, 0.75, 0.75};
+         Eigen::Vector3d t{size.x() / 2 - 0.19, 0, -size.z()};
+         t.x() -= 0.5725;
+         t.y() -= 0.01;
+         return BoxRobotParams{size, mc_rtc::gui::Color::LightGray, 10, sva::PTransformd(t)};
+       }()}}},
+    {PandaLIRMMRobots::Panda6LIRMM,
+     {{"MetalSupport", []
+       {
+         Eigen::Vector3d size{0.25, 0.27, 0.716};
+         return BoxRobotParams{size, mc_rtc::gui::Color::Cyan, 40,
+                               sva::PTransformd(Eigen::Vector3d{-(size.x() / 4), 0, -size.z()})};
+       }()}}}};
+
 inline static std::string ModuleNameFromParams(mc_panda::PandaRobots pandaRobot,
                                                PandaLIRMMRobots lirmmRobot,
                                                mc_panda::Tools tool,
-                                               bool calibrated)
+                                               bool calibrated,
+                                               const std::string & supportName = "")
 {
   auto pandaRm = mc_panda::ModuleNameFromParams(pandaRobot, tool, ""); // ex: FR3_Default
-  auto prefix = to_string(lirmmRobot);
-  /* Panda2LIRMM_Table2 _ FR3_Default */
   auto name = to_string(lirmmRobot) + "_" + pandaRm;
   if(calibrated)
   {
-    /* Panda2LIRMM_Table2 _ FR3_Default _ Calibrated */
     name += "_Calibrated";
+  }
+  if(!supportName.empty())
+  {
+    name += "_" + supportName;
   }
   return name;
 }
@@ -70,11 +114,10 @@ inline static std::string ModuleNameFromParams(mc_panda::PandaRobots pandaRobot,
 inline static std::string RobotNameFromParams(mc_panda::PandaRobots pandaRobot,
                                               PandaLIRMMRobots lirmmRobot,
                                               mc_panda::Tools tool,
-                                              bool calibrated)
+                                              bool calibrated,
+                                              const std::string & supportName = "")
 {
-  auto name = ModuleNameFromParams(pandaRobot, lirmmRobot, tool, calibrated);
-  std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
-  return name;
+  return mc_panda::to_lower_case(ModuleNameFromParams(pandaRobot, lirmmRobot, tool, calibrated, supportName));
 }
 
 template<typename Callback>
@@ -86,24 +129,57 @@ static void ForAllVariants(Callback cb)
   {
     for(mc_panda::PandaRobots pandaRobot : {mc_panda::PandaRobots::FR1, mc_panda::PandaRobots::FR3})
     {
-      for(R robot : {R::Panda2LIRMM, R::Panda2LIRMM_Table1, R::Panda2LIRMM_Table2, R::Panda7LIRMM,
-                     R::Panda7LIRMM_Table1, R::Panda7LIRMM_Table2, R::Panda6LIRMM, R::Panda6LIRMM_MetalSupport})
+      for(R robot : {R::Panda2LIRMM, R::Panda7LIRMM, R::Panda6LIRMM})
       {
-        cb(pandaRobot, robot, endEffector, false); // non calibrated variants (using urdf from mc_panda)
+        auto it = PandaLIRMMRobotSupports.find(robot);
+        if(it != PandaLIRMMRobotSupports.end() && !it->second.empty())
+        {
+          for(const auto & support : it->second)
+          {
+            cb(pandaRobot, robot, endEffector, false, support.first); // non-calibrated, with support
+          }
+        }
+        else
+        {
+          cb(pandaRobot, robot, endEffector, false, ""); // non-calibrated, no support
+        }
       }
     }
 
-    // calibrated variants
-    // XXX: for now we only have a variant for panda_default generated, and calibration has only be done for Panda2
-    // The smart thing to do here would be to refactor mc_panda to use ConnectModules and remove the extra urdf
-    // panda_foot.urdf, panda_pump.urdf...
-
-    /* calibrated variants (using urdf from ./calibrated_urdf/) */
-    cb(mc_panda::PandaRobots::FR1, R::Panda2LIRMM, endEffector, true);
-    cb(mc_panda::PandaRobots::FR1, R::Panda2LIRMM_Table2, endEffector, true);
-    cb(mc_panda::PandaRobots::FR1, R::Panda7LIRMM, endEffector, true);
-    cb(mc_panda::PandaRobots::FR1, R::Panda7LIRMM_Table2, endEffector, true);
+    // Calibrated variants (example: only for Panda2LIRMM)
+    cb(mc_panda::PandaRobots::FR1, R::Panda2LIRMM, endEffector, true, "");
+    // Add more as needed for your calibration setup
   }
+}
+
+std::shared_ptr<mc_rbdyn::RobotModule> makeBoxRobotModule(const BoxRobotParams & params)
+{
+  const auto & size = params.size;
+  const auto & color = params.color;
+  double mass = params.mass;
+
+  auto boxYaml = fmt::format(R"(
+name: robot_support
+origin:
+  translation: [0, 0, {0}]
+  rotation: [0, 0, 0]
+material:
+  color:
+    r: {5}
+    g: {6}
+    b: {7}
+    a: {8}
+geometry:
+  box:
+    size: [{1}, {2}, {3}]
+inertia:
+  mass: {4}
+fixed: true
+)",
+                             size.z() / 2, size.x(), size.y(), size.z(), mass, color.r, color.g, color.b, color.a);
+
+  auto boxConfig = mc_rtc::Configuration::fromYAMLData(boxYaml);
+  return mc_rbdyn::robotModuleFromVisual("robot_support", boxConfig);
 }
 
 } // namespace mc_panda_lirmm
@@ -114,8 +190,11 @@ extern "C"
   {
     using namespace mc_panda_lirmm;
     ForAllVariants(
-        [&names](mc_panda::PandaRobots pandaRobot, PandaLIRMMRobots lirmmRobot, mc_panda::Tools tool, bool calibrated)
-        { names.push_back(mc_panda_lirmm::ModuleNameFromParams(pandaRobot, lirmmRobot, tool, calibrated)); });
+        [&names](mc_panda::PandaRobots pandaRobot, PandaLIRMMRobots lirmmRobot, mc_panda::Tools tool, bool calibrated,
+                 const std::string & supportName)
+        {
+          names.push_back(mc_panda_lirmm::ModuleNameFromParams(pandaRobot, lirmmRobot, tool, calibrated, supportName));
+        });
   }
   ROBOT_MODULE_API void destroy(mc_rbdyn::RobotModule * ptr)
   {
@@ -132,42 +211,24 @@ extern "C"
     mc_rbdyn::RobotModule * result = nullptr;
 
     ForAllVariants(
-        [&](mc_panda::PandaRobots pandaRobot, PandaLIRMMRobots lirmmRobot, mc_panda::Tools tool, bool calibrated)
+        [&](mc_panda::PandaRobots pandaRobot, PandaLIRMMRobots lirmmRobot, mc_panda::Tools tool, bool calibrated,
+            const std::string & supportName)
         {
-          if(found) return; // Already found, skip
+          if(found) return;
 
           std::string lirmm_variant_name =
-              mc_panda_lirmm::ModuleNameFromParams(pandaRobot, lirmmRobot, tool, calibrated);
+              mc_panda_lirmm::ModuleNameFromParams(pandaRobot, lirmmRobot, tool, calibrated, supportName);
           if(lirmm_variant_name != n) return;
 
           std::string panda_variant_name = mc_panda::ModuleNameFromParams(pandaRobot, tool);
-          std::string robot_name = mc_panda_lirmm::RobotNameFromParams(pandaRobot, lirmmRobot, tool, calibrated);
+          std::string robot_name =
+              mc_panda_lirmm::RobotNameFromParams(pandaRobot, lirmmRobot, tool, calibrated, supportName);
 
-          Eigen::Vector3d size;
-          using Color = mc_rtc::gui::Color;
-          Color color;
-          double mass;
           mc_rbdyn::RobotModule * pandaRm = nullptr;
           if(calibrated)
           {
-            std::string fr_name = mc_panda::to_string(pandaRobot); // FR1 or FR3
-            std::transform(fr_name.begin(), fr_name.end(), fr_name.begin(),
-                           [](unsigned char c) { return std::tolower(c); }); // lowercase fr1 or fr3
-            std::string lirmmRobotName = {};
-            if(lirmmRobot == R::Panda2LIRMM || lirmmRobot == R::Panda2LIRMM_Table1
-               || lirmmRobot == R::Panda2LIRMM_Table2)
-            {
-              lirmmRobotName = "panda2lirmm";
-            }
-            else if(lirmmRobot == R::Panda7LIRMM || lirmmRobot == R::Panda7LIRMM_Table1
-                    || lirmmRobot == R::Panda7LIRMM_Table2)
-            {
-              lirmmRobotName = "panda7lirmm";
-            }
-            else
-            {
-              lirmmRobotName = "panda6lirmm";
-            }
+            std::string fr_name = mc_panda::to_lower_case(mc_panda::to_string(pandaRobot));
+            std::string lirmmRobotName = mc_panda::to_lower_case(to_string(lirmmRobot));
             auto calibrated_urdf_path =
                 fs::path{mc_panda_lirmm::CALIBRATED_PANDA_LIRMM_URDF_PATH} / lirmmRobotName / fr_name;
             auto calibrated_urdf_path_str = calibrated_urdf_path.string();
@@ -187,89 +248,21 @@ extern "C"
           {
             pandaRm = mc_panda::create(panda_variant_name);
           }
-          auto box_to_robot = sva::PTransformd::Identity();
-          if(lirmmRobot == R::Panda2LIRMM_Table1)
-          {
-            size = Eigen::Vector3d{0.75, 1.0, 0.75};
-            color = Color::Gray;
-            mass = 10;
-            box_to_robot = sva::PTransformd(Eigen::Vector3d{-(size.x() / 2 - 0.27), 0, -size.z()});
-          }
-          else if(lirmmRobot == R::Panda2LIRMM_Table2)
-          {
-            size = Eigen::Vector3d{0.75, 1.0, 0.75};
-            color = Color::Gray;
-            mass = 10;
-            box_to_robot = sva::PTransformd(Eigen::Vector3d{-(size.x() / 2 - 0.27), 0, -size.z()});
-            box_to_robot.translation().x() += 0.238;
-            box_to_robot.translation().y() += 0.096;
-          }
-          else if(lirmmRobot == R::Panda6LIRMM_MetalSupport)
-          {
-            size = Eigen::Vector3d{0.25, 0.27, 0.716};
-            color = Color::Cyan;
-            mass = 40;
-            box_to_robot = sva::PTransformd(Eigen::Vector3d{-(size.x() / 4), 0, -size.z()});
-          }
-          else if(lirmmRobot == R::Panda7LIRMM_Table1)
-          {
-            size = Eigen::Vector3d{1.0, 0.75, 0.75};
-            color = Color::LightGray;
-            mass = 10;
-            box_to_robot = sva::PTransformd(Eigen::Vector3d{size.x() / 2 - 0.19, 0, -size.z()});
-          }
-          else if(lirmmRobot == R::Panda7LIRMM_Table2)
-          {
-            size = Eigen::Vector3d{1.0, 0.75, 0.75};
-            color = Color::LightGray;
-            mass = 10;
-            box_to_robot = sva::PTransformd(Eigen::Vector3d{size.x() / 2 - 0.19, 0, -size.z()});
-            box_to_robot.translation().x() -= 0.5725;
-            box_to_robot.translation().y() -= 0.01;
-          }
 
-          if(lirmmRobot == R::Panda2LIRMM || lirmmRobot == R::Panda6LIRMM || lirmmRobot == R::Panda7LIRMM)
+          if(!supportName.empty())
           {
-            result = pandaRm;
+            // Get support parameters from map
+            const auto & params = PandaLIRMMRobotSupports.at(lirmmRobot).at(supportName);
+            auto rmV = makeBoxRobotModule(params);
+            auto base = (pandaRobot == mc_panda::PandaRobots::FR3) ? "base" : "world";
+
+            result = new mc_rbdyn::RobotModule(rmV->connect(
+                *pandaRm, "robot_support", base, "",
+                mc_rbdyn::RobotModule::ConnectionParameters{}.name(robot_name).X_other_connection(params.box_to_robot)));
           }
           else
           {
-            auto boxYaml =
-                fmt::format(R"(
-  name: robot_support
-  origin:
-    translation: [0, 0, {0}]
-    rotation: [0, 0, 0]
-  material:
-    color:
-      r: {5}
-      g: {6}
-      b: {7}
-      a: {8}
-  geometry:
-    box:
-      size: [{1}, {2}, {3}]
-  inertia:
-    mass: {4}
-  fixed: true
-  )",
-                            size.z() / 2, size.x(), size.y(), size.z(), mass, color.r, color.g, color.b, color.a);
-
-            auto boxConfig = mc_rtc::Configuration::fromYAMLData(boxYaml);
-            auto rmV = mc_rbdyn::robotModuleFromVisual("robot_support", boxConfig);
-
-            auto base = "world";
-            if(pandaRobot == mc_panda::PandaRobots::FR1)
-            {
-              base = "world";
-            }
-            else if(pandaRobot == mc_panda::PandaRobots::FR3)
-            {
-              base = "base";
-            }
-            result = new mc_rbdyn::RobotModule(rmV->connect(
-                *pandaRm, "robot_support", base, "",
-                mc_rbdyn::RobotModule::ConnectionParameters{}.name(robot_name).X_other_connection(box_to_robot)));
+            result = pandaRm;
           }
           found = true;
         });
@@ -281,11 +274,18 @@ extern "C"
     else
     {
       mc_rtc::log::error("PandaLIRMM module Cannot create an object of type {}", n);
-      // Optionally, enumerate all available variants for info
       std::vector<std::string> available;
       ForAllVariants(
-          [&](mc_panda::PandaRobots pandaRobot, PandaLIRMMRobots lirmmRobot, mc_panda::Tools tool, bool calibrated)
-          { available.push_back(mc_panda_lirmm::ModuleNameFromParams(pandaRobot, lirmmRobot, tool, calibrated)); });
+          [&](mc_panda::PandaRobots pandaRobot, PandaLIRMMRobots lirmmRobot, mc_panda::Tools tool, bool calibrated,
+              const std::string & supportName)
+          {
+            std::string name = mc_panda_lirmm::ModuleNameFromParams(pandaRobot, lirmmRobot, tool, calibrated);
+            if(!supportName.empty())
+            {
+              name += "_" + supportName;
+            }
+            available.push_back(name);
+          });
       mc_rtc::log::info("Available variants are: {}", fmt::join(available, ", "));
       return nullptr;
     }
