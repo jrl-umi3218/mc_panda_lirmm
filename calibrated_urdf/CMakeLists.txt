@@ -6,7 +6,6 @@ set(CALIBRATED_PANDA_LIRMM_URDF_PATH "${CMAKE_INSTALL_PREFIX}/share/mc_panda_lir
 # URDF_DESTINATION points to PANDA_DESCRIPTION_PATH, exported from mc_panda
 # This is done on purpose so that meshes in the calibrated urdfs
 set(URDF_DESTINATION "${PANDA_DESCRIPTION_PATH}/")
-set(URDF_OUT "${CMAKE_BINARY_DIR}/calibrated_urdf/panda2lirmm/panda_default.urdf")
+set(URDF_OUT "${CMAKE_BINARY_DIR}/calibrated_urdf/panda2lirmm/urdf/panda_default.urdf")
 configure_file(panda2lirmm/panda_default.in.urdf "${URDF_OUT}" @ONLY)
-install(FILES "${URDF_OUT}" DESTINATION "${CALIBRATED_PANDA_LIRMM_URDF_PATH}/panda2lirmm/")
-
+install(FILES "${URDF_OUT}" DESTINATION "${CALIBRATED_PANDA_LIRMM_URDF_PATH}/panda2lirmm/urdf/")

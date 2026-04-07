@@ -13,13 +13,13 @@
   </gazebo>
   <link name="main_link">
     </link>
-  
+
   <joint name="panda_joint_main_link" type="fixed">
     <parent link="main_link" />
     <child link="panda_link0" />
     <origin rpy="0 0 0" xyz="0 0 0" />
   </joint>
-  
+
   <gazebo reference="panda_link0" />
   <gazebo reference="panda_link1" />
   <gazebo reference="panda_link2" />
@@ -94,7 +94,7 @@
   </transmission>
   <link name="panda_link0">
     <inertial>
-      
+
       <origin rpy="0 0 0" xyz="-0.041018 -0.00014 0.049974" />
       <mass value="0.629769" />
       <inertia ixx="0.00315" ixy="8.2904E-07" ixz="0.00015" iyy="0.00388" iyz="8.2299E-06" izz="0.004285" />
