@@ -63,7 +63,7 @@ const std::map<PandaLIRMMRobots, std::map<std::string, BoxRobotParams>> PandaLIR
        {
          Eigen::Vector3d size{0.75, 1.0, 0.75};
          Eigen::Vector3d t{-(size.x() / 2 - 0.27), 0, -size.z()};
-         t.x() += 0.238;
+         t.x() += 0.238 + 0.0091;
          t.y() += 0.096;
          return BoxRobotParams{size, mc_rtc::gui::Color::Gray, 10, sva::PTransformd(t)};
        }()}}},
@@ -81,7 +81,7 @@ const std::map<PandaLIRMMRobots, std::map<std::string, BoxRobotParams>> PandaLIR
          Eigen::Vector3d size{1.0, 0.75, 0.75};
          Eigen::Vector3d t{size.x() / 2 - 0.19, 0, -size.z()};
          t.x() -= 0.5725;
-         t.y() -= 0.01;
+         t.y() -= 0.01 - 0.018;
          return BoxRobotParams{size, mc_rtc::gui::Color::LightGray, 10, sva::PTransformd(t)};
        }()}}},
     {PandaLIRMMRobots::Panda6LIRMM,
