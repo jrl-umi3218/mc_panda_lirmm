@@ -100,13 +100,13 @@ inline static std::string ModuleNameFromParams(mc_panda::PandaRobots pandaRobot,
 {
   auto pandaRm = mc_panda::ModuleNameFromParams(pandaRobot, tool, ""); // ex: FR3_Default
   auto name = to_string(lirmmRobot) + "_" + pandaRm;
-  if(calibrated)
-  {
-    name += "_Calibrated";
-  }
   if(!supportName.empty())
   {
     name += "_" + supportName;
+  }
+  if(calibrated)
+  {
+    name += "_Calibrated";
   }
   return name;
 }
@@ -137,18 +137,18 @@ static void ForAllVariants(Callback cb)
           for(const auto & support : it->second)
           {
             cb(pandaRobot, robot, endEffector, false, support.first); // non-calibrated, with support
+            // Calibrated variants (example: only for Panda2LIRMM)
+            cb(mc_panda::PandaRobots::FR1, robot, endEffector, true, support.first);
           }
         }
         else
         {
           cb(pandaRobot, robot, endEffector, false, ""); // non-calibrated, no support
+          // Calibrated variants (example: only for Panda2LIRMM)
+          cb(mc_panda::PandaRobots::FR1, robot, endEffector, true, "");
         }
       }
     }
-
-    // Calibrated variants (example: only for Panda2LIRMM)
-    cb(mc_panda::PandaRobots::FR1, R::Panda2LIRMM, endEffector, true, "");
-    // Add more as needed for your calibration setup
   }
 }
 
@@ -241,8 +241,11 @@ extern "C"
               mc_rtc::log::error_and_throw("Calibrated urdf not found for {}: {}", lirmm_variant_name,
                                            calibrated_urdf_path_str);
             }
-            pandaRm = mc_panda::create(panda_variant_name, calibrated_urdf_path, mc_panda::PANDA_DESCRIPTION_PATH,
-                                       calibrated_urdf_path);
+            auto calibPathsConfig =
+                pandaRobot == mc_panda::PandaRobots::FR1 ? mc_panda::FR1DefaultPaths : mc_panda::FR3DefaultPaths;
+            calibPathsConfig.urdf_base_path =
+                calibrated_urdf_path; // override urdf base path with the calibrated one (fr1 only for now)
+            pandaRm = mc_panda::create(panda_variant_name, calibPathsConfig);
           }
           else
           {
