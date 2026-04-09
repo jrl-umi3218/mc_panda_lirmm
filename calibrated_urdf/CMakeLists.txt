@@ -9,3 +9,8 @@ set(URDF_DESTINATION "${FR1_DESCRIPTION_PATH}/")
 set(URDF_OUT "${CMAKE_BINARY_DIR}/calibrated_urdf/panda2lirmm/fr1/urdf/panda_default.urdf")
 configure_file(panda2lirmm/fr1/panda_default.in.urdf "${URDF_OUT}" @ONLY)
 install(FILES "${URDF_OUT}" DESTINATION "${CALIBRATED_PANDA_LIRMM_URDF_PATH}/panda2lirmm/fr1/urdf/")
+
+set(URDF_DESTINATION "${FR1_DESCRIPTION_PATH}/")
+set(URDF_OUT "${CMAKE_BINARY_DIR}/calibrated_urdf/panda7lirmm/fr1/urdf/panda_default.urdf")
+configure_file(panda7lirmm/fr1/panda_default.in.urdf "${URDF_OUT}" @ONLY)
+install(FILES "${URDF_OUT}" DESTINATION "${CALIBRATED_PANDA_LIRMM_URDF_PATH}/panda7lirmm/fr1/urdf/")
