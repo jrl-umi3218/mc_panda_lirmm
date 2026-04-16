@@ -1,3 +1,10 @@
+mc-panda-lirmm (2.0.0-1debian1) unstable; urgency=medium
+
+  * Upgrade for mc-panda 2.0.0
+  * Calibrated models
+
+ -- Arnaud TANGUY <arn.tanguy+ppa@gmail.com>  Thu, 16 Apr 2026 15:00:32 +0100
+
 mc-panda-lirmm (1.0.0-1debian1) unstable; urgency=medium
 
   * Initial release
