@@ -126,7 +126,7 @@ static void ForAllVariants(Callback cb)
   using R = mc_panda_lirmm::PandaLIRMMRobots;
   using T = mc_panda::Tools;
   // for(auto endEffector : {T::Default, T::Pump, T::Foot, T::Hand})
-  for(auto endEffector : {T::Default, T::Pump, T::Foot, T::Hand, T::Mukca})
+  for(auto endEffector : {T::Default, T::Pump, T::Foot, T::Hand, T::Mukca, T::PandaToPandaCalib})
   {
     for(mc_panda::PandaRobots pandaRobot : {mc_panda::PandaRobots::FR1, mc_panda::PandaRobots::FR3})
     {
