@@ -90,37 +90,37 @@ nix build
 
 IP: 192.168.1.2
 
-Panda2 model  
+Panda2 model
 ![panda2](doc/panda2.png)
 
-Panda2 convex  
+Panda2 convex
 ![panda2 convex](doc/panda2_convex.png)
 
-Panda2 basic convex shapes  
+Panda2 basic convex shapes
 ![panda2 convex shapes](doc/panda2_shapes_convex.png)
 
 ### Panda6
 
 IP: 172.16.0.6
 
-panda6 model  
+panda6 model
 ![panda6](doc/panda6.png)
 
-panda6 convex  
+panda6 convex
 ![panda6 convex](doc/panda6_convex.png)
 
-panda6 basic convex shapes  
+panda6 basic convex shapes
 ![panda6 convex shapes](doc/panda6_shapes_convex.png)
 
 ### Panda7
 
 IP: 172.16.1.7
 
-Panda7 model  
+Panda7 model
 ![panda7](doc/panda7.png)
 
-Panda7 convex  
+Panda7 convex
 ![panda7 convex](doc/panda7_convex.png)
 
-Panda7 basic convex shapes  
+Panda7 basic convex shapes
 ![panda7 convex shapes](doc/panda7_shapes_convex.png)
