@@ -5,6 +5,7 @@
     mc-rtc-nix.url = "github:mc-rtc/nixpkgs";
     flake-parts.follows = "mc-rtc-nix/flake-parts";
     systems.follows = "mc-rtc-nix/systems";
+    mc-panda.url = "github:jrl-umi3218/mc_panda/pull/17/head";
   };
 
   outputs =
@@ -23,6 +24,10 @@
                 src = lib.cleanSource ./.;
               };
 
+              overrideAttrs.mc-panda = {
+                src = inputs.mc-panda;
+              };
+
               # Define a custom superbuild configuration
               overrides.mc-rtc-superbuild-minimal =
                 { pkgs-prev, pkgs-final, ... }:
@@ -33,7 +38,10 @@
                   superbuildArgs = cfg-prev // {
                     pname = "mc-panda-lirmm-superbuild";
                     # extend robots
-                    robots = cfg-prev.robots ++ [ pkgs-final.mc-panda pkgs-final.mc-panda-lirmm ];
+                    robots = cfg-prev.robots ++ [
+                      pkgs-final.mc-panda
+                      pkgs-final.mc-panda-lirmm
+                    ];
                     apps = [ pkgs-final.mc-rtc-magnum ];
                   };
                 };
