@@ -16,9 +16,10 @@ namespace mc_panda_lirmm
  */
 enum class PandaLIRMMRobots
 {
-  Panda2LIRMM, // no table
-  Panda7LIRMM, // original attachement position on the table
-  Panda6LIRMM, // no support
+  Panda2LIRMM,
+  Panda7LIRMM,
+  Panda6LIRMM,
+  PandaGanesh
 };
 
 static std::string to_string(PandaLIRMMRobots robots)
@@ -32,6 +33,8 @@ static std::string to_string(PandaLIRMMRobots robots)
       return "Panda7LIRMM";
     case R::Panda6LIRMM:
       return "Panda6LIRMM";
+    case R::PandaGanesh:
+      return "PandaGanesh";
     default:
       return "UnknownPandaLIRMM";
   }
@@ -130,7 +133,7 @@ static void ForAllVariants(Callback cb)
   {
     for(mc_panda::PandaRobots pandaRobot : {mc_panda::PandaRobots::FR1, mc_panda::PandaRobots::FR3})
     {
-      for(R robot : {R::Panda2LIRMM, R::Panda7LIRMM, R::Panda6LIRMM})
+      for(R robot : {R::Panda2LIRMM, R::Panda7LIRMM, R::Panda6LIRMM, R::PandaGanesh})
       {
         auto it = PandaLIRMMRobotSupports.find(robot);
         if(it != PandaLIRMMRobotSupports.end() && !it->second.empty())
@@ -138,14 +141,14 @@ static void ForAllVariants(Callback cb)
           for(const auto & support : it->second)
           {
             cb(pandaRobot, robot, endEffector, false, support.first); // non-calibrated, with support
-            // Calibrated variants (example: only for Panda2LIRMM)
+            // Calibrated variants
             cb(mc_panda::PandaRobots::FR1, robot, endEffector, true, support.first);
           }
         }
         else
         {
           cb(pandaRobot, robot, endEffector, false, ""); // non-calibrated, no support
-          // Calibrated variants (example: only for Panda2LIRMM)
+          // Calibrated variants
           cb(mc_panda::PandaRobots::FR1, robot, endEffector, true, "");
         }
       }
