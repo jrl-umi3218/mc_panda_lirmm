@@ -1,5 +1,5 @@
 add_robot(PandaLIRMM src/module.cpp)
-target_link_libraries(PandaLIRMM PUBLIC mc_panda::panda)
+target_link_libraries(PandaLIRMM PUBLIC mc_panda::panda mc_rtc::mc_rtc_gui)
 target_compile_definitions(PandaLIRMM PRIVATE -DPANDA_DESCRIPTION_PATH="${PANDA_DESCRIPTION_PATH}")
 
 install(DIRECTORY rsdf/panda2_lirmm
