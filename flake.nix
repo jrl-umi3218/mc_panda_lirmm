@@ -1,11 +1,10 @@
 {
-  description = "Flake providing a mc-rtc-superbuild shell for mc-panda-lirmm robots";
+  description = "mc-panda-lirmm: flakoboros and mc-rtc-superbuild shell for mc-panda-lirmm robot module";
 
   inputs = {
-    mc-rtc-nix.url = "github:mc-rtc/nixpkgs";
+    mc-rtc-nix.url = "github:mc-rtc/nixpkgs/pull/64/head";
     flake-parts.follows = "mc-rtc-nix/flake-parts";
     systems.follows = "mc-rtc-nix/systems";
-    mc-panda.url = "github:jrl-umi3218/mc_panda/pull/17/head";
   };
 
   outputs =
@@ -17,60 +16,29 @@
         imports = [
           inputs.mc-rtc-nix.flakeModule
           {
+            mc-rtc-superbuild =
+              { pkgs, ... }:
+              {
+                enable = true;
+                project.pname = "";
+                configurations = {
+                  mc-panda-lirmm-minimal = {
+                    extends = [ "minimal" ];
+                    runtime.apps = [ pkgs.mc-rtc-magnum ];
+                    devel.robots = [
+                      pkgs.mc-panda
+                      pkgs.mc-panda-lirmm
+                    ];
+                  };
+                };
+              };
             flakoboros = {
-              extraPackages = [ "ninja" ];
-
               overrideAttrs.mc-panda-lirmm = {
                 src = lib.cleanSource ./.;
               };
-
-              overrideAttrs.mc-panda = {
-                src = inputs.mc-panda;
-              };
-
-              # Define a custom superbuild configuration
-              overrides.mc-rtc-superbuild-minimal =
-                { pkgs-prev, pkgs-final, ... }:
-                let
-                  cfg-prev = pkgs-prev.mc-rtc-superbuild-minimal.superbuildArgs;
-                in
-                {
-                  superbuildArgs = cfg-prev // {
-                    pname = "mc-panda-lirmm-superbuild";
-                    # extend robots
-                    robots = cfg-prev.robots ++ [
-                      pkgs-final.mc-panda
-                      pkgs-final.mc-panda-lirmm
-                    ];
-                    apps = [ pkgs-final.mc-rtc-magnum ];
-                  };
-                };
-
             };
           }
         ];
-        perSystem =
-          { pkgs, ... }:
-          {
-            # define a devShell called local-superbuild with the superbuild configuration above
-            # you can also override attributes to add additional shell functionality
-            devShells.default =
-              (pkgs.callPackage "${inputs.mc-rtc-nix}/shell.nix" {
-                mc-rtc-superbuild = pkgs.mc-rtc-superbuild-minimal;
-              }).overrideAttrs
-                (old: {
-                  shellHook = ''
-                    ${old.shellHook or ""}
-
-                    echo ""
-                    echo "Welcome to ${pkgs.mc-rtc-superbuild-minimal.superbuildArgs.pname} !"
-                    echo "Run:"
-                    echo "$ mc-rtc-magnum & # to display the gui"
-                    echo "$ mc_robot_visualization # to display all available robot variants"
-                    echo "----"
-                  '';
-                });
-          };
       }
     );
 }
