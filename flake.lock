@@ -670,11 +670,11 @@
         "with-ros-trigger": "with-ros-trigger"
       },
       "locked": {
-        "lastModified": 1783017924,
-        "narHash": "sha256-yArsnavxn28e/4uLQUPwp18DF40cQp6nWJ9wTnDy/RQ=",
+        "lastModified": 1783022658,
+        "narHash": "sha256-yiz57jKgOngr7LYy1CoM+gtQliL8kFTYw/qgAMqj9tw=",
         "owner": "mc-rtc",
         "repo": "nixpkgs",
-        "rev": "81d9fa18ea159167a4ce517307eb8928f265b847",
+        "rev": "4302910e04be38ba5b27148e4fa94f0fd450e4b4",
         "type": "github"
       },
       "original": {
